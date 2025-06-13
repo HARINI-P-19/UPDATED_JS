@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Tasks</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .controls {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 45px 12px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 25px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #4facfe;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .filter-select {
+            padding: 12px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 25px;
+            font-size: 1rem;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #4facfe;
+            background: white;
+        }
+
+        .tasks-container {
+            padding: 30px;
+            min-height: 400px;
+        }
+
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .task-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #4facfe;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .task-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .task-card.high-priority {
+            border-left-color: #ff6b6b;
+        }
+
+        .task-card.medium-priority {
+            border-left-color: #feca57;
+        }
+
+        .task-card.low-priority {
+            border-left-color: #48cab2;
+        }
+
+        .task-card.completed {
+            opacity: 0.7;
+            border-left-color: #95a5a6;
+        }
+
+        .task-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .task-title.completed {
+            text-decoration: line-through;
+        }
+
+        .task-description {
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .task-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .task-priority {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .priority-high { background: #fee; color: #e74c3c; }
+        .priority-medium { background: #fff8e1; color: #f39c12; }
+        .priority-low { background: #e8f5e8; color: #27ae60; }
+
+        .task-date {
+            color: #95a5a6;
+            font-size: 0.85rem;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-complete {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-complete:hover {
+            background: #219a52;
+        }
+
+        .btn-edit {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #2980b9;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        .no-tasks {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 1.2rem;
+            padding: 60px 20px;
+        }
+
+        .no-tasks svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .tasks-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                flex-direction: column;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .back-btn {
+                position: static;
+                transform: none;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-btn" onclick="goBack()">← Back</button>
+            <h1>All Tasks</h1>
+            <p>Manage and view all your tasks in one place</p>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search tasks..." onkeyup="filterTasks()">
+                <span class="search-icon">🔍</span>
+            </div>
+            <select class="filter-select" id="priorityFilter" onchange="filterTasks()">
+                <option value="all">All Priorities</option>
+                <option value="high">High Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="low">Low Priority</option>
+            </select>
+            <select class="filter-select" id="statusFilter" onchange="filterTasks()">
+                <option value="all">All Tasks</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+            </select>
+        </div>
+
+        <div class="tasks-container">
+            <div class="stats" id="taskStats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTasks">0</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingTasks">0</div>
+                    <div class="stat-label">Pending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completedTasks">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="highPriorityTasks">0</div>
+                    <div class="stat-label">High Priority</div>
+                </div>
+            </div>
+
+            <div class="tasks-grid" id="tasksGrid">
+                <!-- Tasks will be loaded here -->
+            </div>
+
+            <div class="no-tasks" id="noTasks" style="display: none;">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.58L19 8l-9 9z"/>
+                </svg>
+                <h3>No Tasks Found</h3>
+                <p>You haven't created any tasks yet, or no tasks match your current filters.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allTasks = [];
+
+        // Load tasks from localStorage
+        function loadTasks() {
+            const stored = localStorage.getItem('tasks');
+            allTasks = stored ? JSON.parse(stored) : [];
+            updateStats();
+            displayTasks(allTasks);
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = allTasks.length;
+            const pending = allTasks.filter(task => !task.completed).length;
+            const completed = allTasks.filter(task => task.completed).length;
+            const highPriority = allTasks.filter(task => task.priority === 'high').length;
+
+            document.getElementById('totalTasks').textContent = total;
+            document.getElementById('pendingTasks').textContent = pending;
+            document.getElementById('completedTasks').textContent = completed;
+            document.getElementById('highPriorityTasks').textContent = highPriority;
+        }
+
+        // Display tasks
+        function displayTasks(tasks) {
+            const grid = document.getElementById('tasksGrid');
+            const noTasks = document.getElementById('noTasks');
+
+            if (tasks.length === 0) {
+                grid.style.display = 'none';
+                noTasks.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            noTasks.style.display = 'none';
+
+            grid.innerHTML = tasks.map(task => `
+                <div class="task-card ${task.priority}-priority ${task.completed ? 'completed' : ''}">
+                    <h3 class="task-title ${task.completed ? 'completed' : ''}">${task.title}</h3>
+                    <p class="task-description">${task.description || 'No description provided'}</p>
+                    <div class="task-meta">
+                        <span class="task-priority priority-${task.priority}">${task.priority}</span>
+                        <span class="task-date">Created: ${new Date(task.createdAt || Date.now()).toLocaleDateString()}</span>
+                    </div>
+                    <div class="task-actions">
+                        ${!task.completed ? `<button class="btn btn-complete" onclick="toggleTask(${task.id})">Complete</button>` : 
+                          `<button class="btn btn-complete" onclick="toggleTask(${task.id})" style="background: #95a5a6;">Undo</button>`}
+                        <button class="btn btn-edit" onclick="editTask(${task.id})">Edit</button>
+                        <button class="btn btn-delete" onclick="deleteTask(${task.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter tasks
+        function filterTasks() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            let filtered = allTasks.filter(task => {
+                const matchesSearch = task.title.toLowerCase().includes(searchTerm) || 
+                                    (task.description && task.description.toLowerCase().includes(searchTerm));
+                const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
+                const matchesStatus = statusFilter === 'all' || 
+                                    (statusFilter === 'completed' && task.completed) ||
+                                    (statusFilter === 'pending' && !task.completed);
+
+                return matchesSearch && matchesPriority && matchesStatus;
+            });
+
+            displayTasks(filtered);
+        }
+
+        // Toggle task completion
+        function toggleTask(id) {
+            const taskIndex = allTasks.findIndex(task => task.id === id);
+            if (taskIndex !== -1) {
+                allTasks[taskIndex].completed = !allTasks[taskIndex].completed;
+                localStorage.setItem('tasks', JSON.stringify(allTasks));
+                updateStats();
+                filterTasks(); // Refresh display with current filters
+            }
+        }
+
+        // Delete task
+        function deleteTask(id) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                allTasks = allTasks.filter(task => task.id !== id);
+                localStorage.setItem('tasks', JSON.stringify(allTasks));
+                updateStats();
+                filterTasks(); // Refresh display with current filters
+            }
+        }
+
+        // Edit task (placeholder - you can implement a modal or redirect to edit page)
+        function editTask(id) {
+            const task = allTasks.find(task => task.id === id);
+            if (task) {
+                const newTitle = prompt('Edit task title:', task.title);
+                if (newTitle && newTitle.trim()) {
+                    const newDescription = prompt('Edit task description:', task.description || '');
+                    const newPriority = prompt('Edit priority (high/medium/low):', task.priority);
+                    
+                    if (['high', 'medium', 'low'].includes(newPriority)) {
+                        task.title = newTitle.trim();
+                        task.description = newDescription.trim();
+                        task.priority = newPriority;
+                        localStorage.setItem('tasks', JSON.stringify(allTasks));
+                        filterTasks(); // Refresh display
+                    }
+                }
+            }
+        }
+
+        // Go back to main page
+        function goBack() {
+            window.history.back();
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', loadTasks);
+    </script>
+</body>
+</html>
